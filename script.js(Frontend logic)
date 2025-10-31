@@ -1,0 +1,55 @@
+const apiBase = "http://localhost:8080/api/jobs";
+
+async function fetchJobs() {
+  const res = await fetch(apiBase);
+  const data = await res.json();
+  renderJobs(data);
+}
+
+function renderJobs(jobs) {
+  const tbody = document.querySelector("#jobTable tbody");
+  tbody.innerHTML = "";
+  jobs.forEach(job => {
+    const row = `
+      <tr>
+        <td>${job.id}</td>
+        <td>${job.company}</td>
+        <td>${job.role}</td>
+        <td>${job.status}</td>
+        <td>${job.source}</td>
+        <td>${job.notes}</td>
+        <td>
+          <button onclick="deleteJob(${job.id})">Delete</button>
+        </td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+}
+
+document.getElementById("jobForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const job = {
+    company: document.getElementById("company").value,
+    role: document.getElementById("role").value,
+    status: document.getElementById("status").value,
+    source: document.getElementById("source").value,
+    notes: document.getElementById("notes").value,
+  };
+
+  await fetch(apiBase, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(job),
+  });
+
+  e.target.reset();
+  fetchJobs();
+});
+
+async function deleteJob(id) {
+  await fetch(`${apiBase}/${id}`, { method: "DELETE" });
+  fetchJobs();
+}
+
+fetchJobs();
